@@ -1,0 +1,51 @@
+import { initializeApp } from "firebase/app";
+import { getFirestore, getDoc, doc, setDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth"; 
+
+// TODO: Replace the following with your app's Firebase project configuration
+// See: https://support.google.com/firebase/answer/7015592
+const firebaseConfig = {
+
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+// Initialize Cloud Firestore and get a reference to the service
+const firestore = getFirestore(app);
+let auth=null;
+try {
+  auth = getAuth(app);
+} catch (error) {
+  console.log(`Error auth ${error}`);
+}
+
+
+// auth.createUserWithEmailAndPassword=createUserWithEmailAndPassword;
+  const createUserProfileDocument=async(userAuth,additionalData)=>{
+    const {displayName, email }=userAuth;
+    const createdAt=new Date();
+    const userRef=doc(firestore,'users',userAuth.uid);
+    const docSnap=await getDoc(userRef);
+
+    if(!docSnap.exists()){
+      try {
+        await setDoc(doc(firestore, "users", userAuth.uid), {
+            displayName,
+            email,
+            createdAt,
+            ...additionalData,
+        });
+      } catch (error) {
+        console.log('error creating user', error.message);
+      }
+    }
+
+    return userRef;
+  }
+
+  export {
+    firestore,
+    createUserProfileDocument,
+    auth,
+  }
